@@ -33,3 +33,34 @@
 
     - name: Change the working directory to Tomcat Apache before running Tomcat Apache
       shell: nohup /opt/tomcat/bin/startup.sh
+
+
+  root@ip-172-31-31-43:/home/ubuntu# vi tomcatinstall.yml 
+
+---
+- hosts: webservers
+  become: yes
+  vars:
+    appName: java-sample.war
+  tasks:
+     - name: Install JDK package
+       apt: name=default-jdk update_cache=yes state=latest
+
+     - name: Install Tomcat10 package
+       apt: name=tomcat10 update_cache=yes state=latest
+
+     - name: Install Tomcat10-admin package
+       apt: name=tomcat10-admin update_cache=yes state=latest
+
+     - name: Restart Service
+       service: name=tomcat10 state=restarted
+
+     - name: copy war
+       get_url: url=https://tomcat.apache.org/tomcat-7.0-doc/appdev/sample/sample.war dest=/opt/tomcat/webapps/{{ appName }} owner=tomcat group=tomcat mode=0744
+
+     - name: Deploy Java code
+       shell: |
+         git clone https://github.com/anujdevopslearn/MavenBuild.git
+         cd /tmp/code
+         mvn clean install
+         cp target/*.war /var/lib/tomcat10/webapps/custom-java.war
