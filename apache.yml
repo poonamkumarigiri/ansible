@@ -1,0 +1,23 @@
+- hosts: webservers
+  tasks:
+     - name: Run the equivalent of "apt-get update" as a separate step
+       apt:
+        update_cache: yes
+
+     - name: Install apache2 package
+       apt: name=apache2 update_cache=yes state=latest
+
+     - name: Enable Mod Rewrite
+       apache2_module: name=rewrite state=present
+
+     - name: Restart Service
+       service: name=apache2 state=restarted
+
+     - name: Clean Old Code
+       file: path=/var/www/html/ state=absent
+   
+     - name: Checking out code
+       git:
+          repo: 'https://github.com/mdn/beginner-html-site-styled.git'
+          dest: /var/www/html/
+          version: gh-pages
